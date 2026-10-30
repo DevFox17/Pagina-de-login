@@ -58,10 +58,12 @@ function getSessionId(request) {
 }
 
 function setSessionCookie(response, request, sessionId, maxAge) {
-  const secure = request.socket.encrypted ? "; Secure" : "";
+  const secureRequest = request.socket.encrypted ||
+    (request.headers.origin && request.headers.origin.startsWith("https://"));
+  const sameSite = secureRequest ? "None; Secure" : "Strict";
   response.setHeader(
     "Set-Cookie",
-    `sessionId=${encodeURIComponent(sessionId)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure}`,
+    `sessionId=${encodeURIComponent(sessionId)}; HttpOnly; SameSite=${sameSite}; Path=/; Max-Age=${maxAge}`,
   );
 }
 
@@ -181,12 +183,48 @@ async function handleApi(request, response, auth, sessions, pathname) {
   sendJson(response, 404, { message: "Rota não encontrada." });
 }
 
-function createServer(auth = new Autenticacao()) {
+function createServer(auth = new Autenticacao(), { frontendOrigin = process.env.FRONTEND_ORIGIN } = {}) {
+  if (frontendOrigin) {
+    let parsedOrigin;
+    try {
+      parsedOrigin = new URL(frontendOrigin);
+    } catch {
+      throw new Error("FRONTEND_ORIGIN precisa ser uma origem HTTP ou HTTPS válida.");
+    }
+    if (!["http:", "https:"].includes(parsedOrigin.protocol) ||
+        parsedOrigin.origin !== frontendOrigin) {
+      throw new Error("FRONTEND_ORIGIN deve conter apenas protocolo, domínio e porta opcionais.");
+    }
+  }
+
   const sessions = new Map();
   return http.createServer(async (request, response) => {
     const url = new URL(request.url, "http://localhost");
     try {
       if (url.pathname.startsWith("/api/")) {
+        const requestOrigin = request.headers.origin;
+        if (requestOrigin && requestOrigin !== frontendOrigin) {
+          sendJson(response, 403, { message: "Origem não autorizada." });
+          return;
+        }
+        if (requestOrigin) {
+          response.setHeader("Access-Control-Allow-Origin", requestOrigin);
+          response.setHeader("Access-Control-Allow-Credentials", "true");
+          response.setHeader("Vary", "Origin");
+        }
+        if (request.method === "OPTIONS") {
+          if (!requestOrigin) {
+            sendJson(response, 400, { message: "Origem não informada." });
+            return;
+          }
+          response.writeHead(204, {
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Max-Age": "600",
+          });
+          response.end();
+          return;
+        }
         await handleApi(request, response, auth, sessions, url.pathname);
         return;
       }

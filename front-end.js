@@ -7,6 +7,9 @@ const views = {
 };
 const statusMessage = document.getElementById("statusMessage");
 const authenticatedEmail = document.getElementById("authenticatedEmail");
+const configuredApiUrl = document.querySelector('meta[name="api-base-url"]').content.trim();
+const isGitHubPages = location.hostname.endsWith(".github.io");
+const apiUnavailable = isGitHubPages && !configuredApiUrl;
 let recoveryEmail = "";
 
 function showView(name) {
@@ -20,13 +23,41 @@ function showView(name) {
   delete statusMessage.dataset.type;
 }
 
+function viewFromHash() {
+  const requestedView = location.hash.slice(1);
+  showView(views[requestedView] ? requestedView : "login");
+}
+
+function getApiUrl(path) {
+  if (apiUnavailable) {
+    throw new Error(
+      "A interface está no GitHub Pages, mas login, cadastro e recuperação precisam de um servidor de autenticação. Configure a URL da API.",
+    );
+  }
+  if (!configuredApiUrl) {
+    return path;
+  }
+
+  let baseUrl;
+  try {
+    baseUrl = new URL(configuredApiUrl);
+  } catch {
+    throw new Error("A URL da API configurada é inválida.");
+  }
+  if (baseUrl.protocol !== "https:" && baseUrl.protocol !== "http:") {
+    throw new Error("A URL da API deve começar com http:// ou https://.");
+  }
+  return new URL(path, `${baseUrl.origin}/`).toString();
+}
+
 async function submitRequest(url, values, method = "POST") {
   let response;
   try {
-    response = await fetch(url, {
+    response = await fetch(getApiUrl(url), {
       method,
       headers: values ? { "Content-Type": "application/json" } : {},
       body: values ? JSON.stringify(values) : undefined,
+      credentials: "include",
     });
   } catch {
     throw new Error("Não foi possível conectar ao servidor. Tente novamente.");
@@ -79,12 +110,8 @@ function handleForm(id, action) {
   });
 }
 
-document.querySelectorAll("[data-view]").forEach((link) => {
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    showView(link.dataset.view);
-  });
-});
+window.addEventListener("hashchange", viewFromHash);
+viewFromHash();
 
 handleForm("loginForm", async (form) => {
   const result = await submitRequest("/api/login", formValues(form));
@@ -147,6 +174,13 @@ document.getElementById("logoutButton").addEventListener("click", async () => {
 });
 
 async function restoreSession() {
+  if (apiUnavailable) {
+    statusMessage.textContent =
+      "Página carregada no GitHub Pages. Para autenticar usuários, configure um servidor de API.";
+    statusMessage.dataset.type = "info";
+    return;
+  }
+
   try {
     const session = await submitRequest("/api/session", undefined, "GET");
     authenticatedEmail.textContent = session.email;

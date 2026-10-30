@@ -11,20 +11,20 @@
     <section id="loginView">
       <h1>Olá, usuário!</h1>
       <h2>Entre na sua conta</h2>
-      <form id="loginForm">
+      <form id="loginForm" method="post" action="./">
         <label for="loginEmail">E-mail</label>
         <input id="loginEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
         <label for="loginPassword">Senha</label>
         <input id="loginPassword" name="password" type="password" placeholder="Digite sua senha" required>
         <button type="submit">Entrar</button>
       </form>
-      <p><a href="#" data-view="recoveryRequest">Esqueci minha senha</a></p>
-      <p>Ainda não tem uma conta? <a href="#" data-view="register">Cadastre-se</a></p>
+      <p><a href="#recoveryRequest" data-view="recoveryRequest">Esqueci minha senha</a></p>
+      <p>Ainda não tem uma conta? <a href="#register" data-view="register">Cadastre-se</a></p>
     </section>
 
     <section id="registerView" hidden>
       <h1>Criar conta</h1>
-      <form id="registerForm">
+      <form id="registerForm" method="post" action="./">
         <label for="registerEmail">E-mail</label>
         <input id="registerEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
         <label for="registerPassword">Senha</label>
@@ -33,23 +33,23 @@
         <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Digite a senha novamente" minlength="8" required>
         <button type="submit">Cadastrar</button>
       </form>
-      <p>Já tem uma conta? <a href="#" data-view="login">Entrar</a></p>
+      <p>Já tem uma conta? <a href="#login" data-view="login">Entrar</a></p>
     </section>
 
     <section id="recoveryRequestView" hidden>
       <h1>Recuperar senha</h1>
       <p>Informe o e-mail cadastrado para receber um código de recuperação.</p>
-      <form id="recoveryRequestForm">
+      <form id="recoveryRequestForm" method="post" action="./">
         <label for="recoveryEmail">E-mail</label>
         <input id="recoveryEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
         <button type="submit">Enviar código</button>
       </form>
-      <p><a href="#" data-view="login">Voltar para o login</a></p>
+      <p><a href="#login" data-view="login">Voltar para o login</a></p>
     </section>
 
     <section id="recoveryResetView" hidden>
       <h1>Redefinir senha</h1>
-      <form id="recoveryResetForm">
+      <form id="recoveryResetForm" method="post" action="./">
         <label for="recoveryResetEmail">E-mail</label>
         <input id="recoveryResetEmail" name="email" type="email" readonly required>
         <label for="recoveryCode">Código recebido</label>
@@ -60,7 +60,7 @@
         <input id="confirmNewPassword" name="confirmPassword" type="password" minlength="8" placeholder="Digite a senha novamente" required>
         <button type="submit">Redefinir senha</button>
       </form>
-      <p><a href="#" data-view="login">Voltar para o login</a></p>
+      <p><a href="#login" data-view="login">Voltar para o login</a></p>
     </section>
 
     <section id="authenticatedView" hidden>
@@ -71,6 +71,7 @@
 
     <p id="statusMessage" role="status" aria-live="polite"></p>
   </main>
-  <script src="/front-end.js" defer></script>
+  <meta name="api-base-url" content="">
+  <script src="./front-end.js" defer></script>
 </body>
 </html>

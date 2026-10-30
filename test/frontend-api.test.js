@@ -23,7 +23,8 @@ test("serves the authentication page and connects its API actions", async (t) =>
       return users.has(email) && code === "123456" && password.length >= 8;
     },
   };
-  const server = createServer(auth);
+  const frontendOrigin = "https://demo.github.io";
+  const server = createServer(auth, { frontendOrigin });
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => new Promise((resolve, reject) => {
@@ -36,6 +37,31 @@ test("serves the authentication page and connects its API actions", async (t) =>
   const html = await page.text();
   assert.match(html, /id="loginForm"/);
   assert.match(html, /id="authenticatedView"/);
+  assert.match(html, /href="\.\/style\.css"/);
+  assert.match(html, /src="\.\/front-end\.js"/);
+  assert.doesNotMatch(html, /<form id="[^"]+"(?![^>]*method="post")/);
+
+  const frontendScript = await fetch(`${baseUrl}/front-end.js`);
+  assert.equal(frontendScript.status, 200);
+  const css = await fetch(`${baseUrl}/style.css`);
+  assert.equal(css.status, 200);
+
+  const preflight = await fetch(`${baseUrl}/api/login`, {
+    method: "OPTIONS",
+    headers: {
+      Origin: frontendOrigin,
+      "Access-Control-Request-Method": "POST",
+      "Access-Control-Request-Headers": "content-type",
+    },
+  });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get("access-control-allow-origin"), frontendOrigin);
+  assert.equal(preflight.headers.get("access-control-allow-credentials"), "true");
+
+  const deniedOrigin = await fetch(`${baseUrl}/api/session`, {
+    headers: { Origin: "https://not-allowed.example" },
+  });
+  assert.equal(deniedOrigin.status, 403);
 
   const invalidJson = await fetch(`${baseUrl}/api/register`, {
     method: "POST",
