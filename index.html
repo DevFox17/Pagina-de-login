@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autenticação</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="emailForm">
+    <section id="loginView">
+      <h1>Olá, usuário!</h1>
+      <h2>Entre na sua conta</h2>
+      <form id="loginForm">
+        <label for="loginEmail">E-mail</label>
+        <input id="loginEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
+        <label for="loginPassword">Senha</label>
+        <input id="loginPassword" name="password" type="password" placeholder="Digite sua senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+      <p><a href="#" data-view="recoveryRequest">Esqueci minha senha</a></p>
+      <p>Ainda não tem uma conta? <a href="#" data-view="register">Cadastre-se</a></p>
+    </section>
+
+    <section id="registerView" hidden>
+      <h1>Criar conta</h1>
+      <form id="registerForm">
+        <label for="registerEmail">E-mail</label>
+        <input id="registerEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
+        <label for="registerPassword">Senha</label>
+        <input id="registerPassword" name="password" type="password" placeholder="Mínimo de 8 caracteres" minlength="8" required>
+        <label for="confirmPassword">Confirme a senha</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Digite a senha novamente" minlength="8" required>
+        <button type="submit">Cadastrar</button>
+      </form>
+      <p>Já tem uma conta? <a href="#" data-view="login">Entrar</a></p>
+    </section>
+
+    <section id="recoveryRequestView" hidden>
+      <h1>Recuperar senha</h1>
+      <p>Informe o e-mail cadastrado para receber um código de recuperação.</p>
+      <form id="recoveryRequestForm">
+        <label for="recoveryEmail">E-mail</label>
+        <input id="recoveryEmail" name="email" type="email" placeholder="Digite seu e-mail" required>
+        <button type="submit">Enviar código</button>
+      </form>
+      <p><a href="#" data-view="login">Voltar para o login</a></p>
+    </section>
+
+    <section id="recoveryResetView" hidden>
+      <h1>Redefinir senha</h1>
+      <form id="recoveryResetForm">
+        <label for="recoveryResetEmail">E-mail</label>
+        <input id="recoveryResetEmail" name="email" type="email" readonly required>
+        <label for="recoveryCode">Código recebido</label>
+        <input id="recoveryCode" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="Código de 6 dígitos" required>
+        <label for="newPassword">Nova senha</label>
+        <input id="newPassword" name="password" type="password" minlength="8" placeholder="Mínimo de 8 caracteres" required>
+        <label for="confirmNewPassword">Confirme a nova senha</label>
+        <input id="confirmNewPassword" name="confirmPassword" type="password" minlength="8" placeholder="Digite a senha novamente" required>
+        <button type="submit">Redefinir senha</button>
+      </form>
+      <p><a href="#" data-view="login">Voltar para o login</a></p>
+    </section>
+
+    <section id="authenticatedView" hidden>
+      <h1>Login realizado</h1>
+      <p>Você está conectado como <strong id="authenticatedEmail"></strong>.</p>
+      <button id="logoutButton" type="button">Sair</button>
+    </section>
+
+    <p id="statusMessage" role="status" aria-live="polite"></p>
+  </main>
+  <script src="/front-end.js" defer></script>
+</body>
+</html>
